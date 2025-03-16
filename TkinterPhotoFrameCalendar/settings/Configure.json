@@ -1,7 +1,7 @@
 {
   "SlideShow": {
     "Interval": 10,
-    "BaseFolder": "C:/Users/ITO TOMOAKI/GitProjects/TkinterPhotoFrameCalendar/sampleimages/",
+    "BaseFolder": "C:/XXX/TkinterPhotoFrameCalendar/sampleimages/",
     "MonthComm": {
       "1": "01_Common_Jan",
       "2": "02_Common_Feb",
