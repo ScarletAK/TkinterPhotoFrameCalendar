@@ -8,6 +8,7 @@ import threading
 import wave
 
 from AppCodes.BaseLibrary import *
+from AppCodes.Configuration import APP_ROOT
 
 
 class SoundSpeaker:
@@ -16,7 +17,7 @@ class SoundSpeaker:
     def __init__(self, sound_file):
         '''コンストラクタ
         '''
-        self.__sound = "./sounds/" + sound_file
+        self.__sound = APP_ROOT + "sounds/" + sound_file
         self.__is_running = False
         self.__speaker_thread = None
 
@@ -82,7 +83,7 @@ class ImageView(BaseCanvas):
         '''表示画像を格納するフォルダのパスを設定
         Param: 画像格納フォルダ名
         '''
-        self._inside_folder = "./images/" + folder_name
+        self._inside_folder = APP_ROOT + "images/" + folder_name
         
     def _set_image_plot_to_all_canvas(self, image_name:str):
         '''画像をキャンバス全体へプロット

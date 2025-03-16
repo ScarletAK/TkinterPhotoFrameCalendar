@@ -8,6 +8,11 @@ import json
 from qreki import Kyureki
 
 
+### 定数
+# ※実行環境に応じて変更すること
+APP_ROOT = "C:/XXX/TkinterPhotoFrameCalendar/TkinterPhotoFrameCalendar/"
+
+
 class JsonFileConfig:
     '''アプリ全体設定
     ※JSONファイルから読み込み
@@ -16,7 +21,7 @@ class JsonFileConfig:
         '''コンストラクタ
         '''
         try:
-            with open("./settings/Configure.json",'r') as f:
+            with open(APP_ROOT + "settings/Configure.json",'r') as f:
                 load_config = json.load(f)
                 self._get_setting = load_config[item_name]
         except FileNotFoundError:
@@ -87,7 +92,7 @@ class SlideShowConfig(JsonFileConfig):
         '''デフォルト設定
         '''
         self.interval = 10
-        self.root_folder = "../sampleimages/"
+        self.root_folder = "C:/Users/ITO TOMOAKI/GitProjects/TkinterPhotoFrameCalendar/sampleimages/"
         self.month_common_folders = {"1":"01_Common_Jan",
                                      "2":"02_Common_Feb",
                                      "3":"03_Common_Mar",
@@ -109,7 +114,7 @@ class EventConfig:
     def __init__(self):
         '''コンストラクタ
         '''
-        with open("./settings/EventsDB.csv") as f:
+        with open(APP_ROOT + "settings/EventsDB.csv", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             self._db = [row for row in reader]  # イベントのDB設定
 

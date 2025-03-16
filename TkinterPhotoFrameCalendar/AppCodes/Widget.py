@@ -6,6 +6,7 @@ import re
 import random
 
 from AppCodes.BaseLibrary import *
+from AppCodes.Configuration import APP_ROOT
 from AppCodes.OutputMedia import ImageView, ImageSynchronize
 
 
@@ -343,7 +344,7 @@ class SlideShow(ImageView):
     '''
     
     ### 定数
-    _INIT_IMAGE_PATH = "./images/top_sample.jpg"    # 初期画像
+    _INIT_IMAGE_PATH = APP_ROOT + "images/top_sample.jpg"    # 初期画像
 
     def __init__(self, master, length:int, interval:int):
         '''コンストラクタ
