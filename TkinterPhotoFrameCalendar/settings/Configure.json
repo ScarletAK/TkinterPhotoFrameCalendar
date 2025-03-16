@@ -1,0 +1,25 @@
+{
+  "SlideShow": {
+    "Interval": 10,
+    "BaseFolder": "../sampleimages/",
+    "MonthComm": {
+      "1": "01_Common_Jan",
+      "2": "02_Common_Feb",
+      "3": "03_Common_Mar",
+      "4": "04_Common_Apr",
+      "5": "05_Common_May",
+      "6": "06_Common_Jun",
+      "7": "07_Common_Jul",
+      "8": "08_Common_Aug",
+      "9": "09_Common_Sep",
+      "10": "10_Common_Oct",
+      "11": "11_Common_Nov",
+      "12": "12_Common_Dec"
+    }
+  },
+  "StreamSound": {
+    "FileName": "stream.wav",
+    "Start": "00:00",
+    "End": "03:00"
+  }
+}
