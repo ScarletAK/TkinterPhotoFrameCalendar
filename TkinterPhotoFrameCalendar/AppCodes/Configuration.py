@@ -9,19 +9,33 @@ from qreki import Kyureki
 
 
 ### 定数
-# ※実行環境に応じて変更すること
-APP_ROOT = "C:/XXX/TkinterPhotoFrameCalendar/TkinterPhotoFrameCalendar/"
+APP_ROOT_FILE = "AppRoot.txt"
 
 
-class JsonFileConfig:
+class FileConfig:
+    '''ファイル設定基幹クラス
+    '''
+    def __init__(self):
+        '''コンストラクタ
+        '''
+        self.app_root_folder = ""
+        try:
+            with open(APP_ROOT_FILE, 'r') as f:
+                self.app_root_folder = f.read()
+        except FileNotFoundError:
+            self.app_root_folder = ""
+
+
+class JsonFileConfig(FileConfig):
     '''アプリ全体設定
     ※JSONファイルから読み込み
     '''
     def __init__(self, item_name:str):
         '''コンストラクタ
         '''
+        super().__init__()
         try:
-            with open(APP_ROOT + "settings/Configure.json",'r') as f:
+            with open(self.app_root_folder + "settings/Configure.json",'r') as f:
                 load_config = json.load(f)
                 self._get_setting = load_config[item_name]
         except FileNotFoundError:
@@ -85,14 +99,17 @@ class SlideShowConfig(JsonFileConfig):
         '''ファイル設定
         '''
         self.interval = self._get_setting["Interval"]
-        self.root_folder = self._get_setting["BaseFolder"]
+        if (self._get_setting["BaseFolder"] == "sampleimages"):
+            self.root_folder = self.__set_sampleimages_folder()
+        else:
+            self.root_folder = self._get_setting["BaseFolder"]
         self.month_common_folders = self._get_setting["MonthComm"]
 
     def __get_default_values(self):
         '''デフォルト設定
         '''
         self.interval = 10
-        self.root_folder = "C:/Users/ITO TOMOAKI/GitProjects/TkinterPhotoFrameCalendar/sampleimages/"
+        self.root_folder = self.__set_sampleimages_folder()
         self.month_common_folders = {"1":"01_Common_Jan",
                                      "2":"02_Common_Feb",
                                      "3":"03_Common_Mar",
@@ -106,17 +123,26 @@ class SlideShowConfig(JsonFileConfig):
                                      "11":"11_Common_Nov",
                                      "12":"12_Common_Dec"}
 
+    def __set_sampleimages_folder(self):
+        '''サンプル画像格納フォルダ設定
+        '''
+        return self.app_root_folder.replace("TkinterPhotoFrameCalendar/", "") + "sampleimages/"
 
-class EventConfig:
+
+class EventConfig(FileConfig):
     '''日毎イベントの設定基幹クラス
     ※CSV形式のデータベース読み込み
     '''
     def __init__(self):
         '''コンストラクタ
         '''
-        with open(APP_ROOT + "settings/EventsDB.csv", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            self._db = [row for row in reader]  # イベントのDB設定
+        super().__init__()
+        try:
+            with open(self.app_root_folder + "settings/EventsDB.csv", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                self._db = [row for row in reader]  # イベントのDB設定
+        except FileNotFoundError:
+            self._db = {}
 
 
 class EventNameConfig(EventConfig):

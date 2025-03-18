@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from AppCodes.Configuration import EventFolderConfig, dt
 from AppCodes.Widget import *
 
 

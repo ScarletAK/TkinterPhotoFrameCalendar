@@ -7,8 +7,8 @@ import shutil
 import threading
 import wave
 
-from AppCodes.BaseLibrary import *
-from AppCodes.Configuration import APP_ROOT
+from AppCodes.BaseLibrary import BaseCanvas
+from AppCodes.Configuration import FileConfig
 
 
 class SoundSpeaker:
@@ -17,7 +17,7 @@ class SoundSpeaker:
     def __init__(self, sound_file):
         '''コンストラクタ
         '''
-        self.__sound = APP_ROOT + "sounds/" + sound_file
+        self.__sound = FileConfig().app_root_folder + "sounds/" + sound_file
         self.__is_running = False
         self.__speaker_thread = None
 
@@ -76,6 +76,7 @@ class ImageView(BaseCanvas):
         Param: マスター、表示用キャンバス長
         '''
         super().__init__(master=master, height=height, width=width)     # 表示用キャンバス設定
+        self._images_root_folder = FileConfig().app_root_folder + "images/"
         self._inside_folder = ""
         self._show_image = None
         
@@ -83,7 +84,7 @@ class ImageView(BaseCanvas):
         '''表示画像を格納するフォルダのパスを設定
         Param: 画像格納フォルダ名
         '''
-        self._inside_folder = APP_ROOT + "images/" + folder_name
+        self._inside_folder = self._images_root_folder + folder_name
         
     def _set_image_plot_to_all_canvas(self, image_name:str):
         '''画像をキャンバス全体へプロット
@@ -143,12 +144,6 @@ class ImageSynchronize:
         Return: コピー先画像ファイルパス
         '''
         return shutil.copy(src_path, self._inside_folder)
-
-    def images_remove(self):
-        '''内部側フォルダの画像を全て破棄
-        '''
-        shutil.rmtree(self._inside_folder) # フォルダごと画像を削除
-        os.mkdir(self._inside_folder)      # フォルダを作り直す
 
     class ImageName:
         def __init__(self, folder:str, name:str):

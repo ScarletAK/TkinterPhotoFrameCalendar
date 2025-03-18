@@ -4,9 +4,10 @@ import math
 import os
 import re
 import random
+import shutil
 
 from AppCodes.BaseLibrary import *
-from AppCodes.Configuration import APP_ROOT
+from AppCodes.Configuration import CalendarConfig, EventNameConfig, JapanDaysConfig, Kyureki, dt
 from AppCodes.OutputMedia import ImageView, ImageSynchronize
 
 
@@ -342,19 +343,16 @@ class AnalogClock(ImageView):
 class SlideShow(ImageView):
     ''' 外部格納画像表示クラス
     '''
-    
-    ### 定数
-    _INIT_IMAGE_PATH = APP_ROOT + "images/top_sample.jpg"    # 初期画像
-
     def __init__(self, master, length:int, interval:int):
         '''コンストラクタ
         Param: マスター、表示用キャンバス長、画像切り替え間隔[s]
         '''
         super().__init__(master, length, length)
         self._set_folder_path("SlideShow")
+        self._inside_folder_init()      # 内部側画像フォルダ初期化
         self.__syn_pcs = ImageSynchronize(self._inside_folder)
         # アプリ起動時に表示する初期画像設定
-        init_image = os.path.basename(self.__syn_pcs.move_image(self._INIT_IMAGE_PATH))
+        init_image = os.path.basename(self.__syn_pcs.move_image(self._images_root_folder + "top_sample.jpg"))
         self._set_image_plot_to_all_canvas(init_image)
         global slide
         slide = self.create_image(0, 0, image=self._show_image, anchor=tk.NW)
@@ -367,8 +365,15 @@ class SlideShow(ImageView):
     def __del__(self):
         '''デストラクタ
         '''
-        self.__syn_pcs.images_remove()
+        self._inside_folder_init()
         
+    def _inside_folder_init(self):
+        '''内部側画像フォルダ初期化
+        '''
+        if os.path.isdir(self._inside_folder):
+            shutil.rmtree(self._inside_folder)  # 内部側フォルダが既に存在する場合、フォルダごと画像を削除
+        os.mkdir(self._inside_folder)           # フォルダを作り直す
+
     def change_src_folder(self, folders:list):
         '''スライドショー表示画像が格納されている外部側フォルダを変更
         '''

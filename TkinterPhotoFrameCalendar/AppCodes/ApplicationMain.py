@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import os
 import schedule as sd
 import threading
 import time
 import pyautogui as pag
 
 from AppCodes.BaseLibrary import *
+from AppCodes.Configuration import APP_ROOT_FILE, SoundConfig, dt
 from AppCodes.Window import Window1, Window2
 from AppCodes.OutputMedia import SoundSpeaker
 
@@ -13,9 +15,11 @@ from AppCodes.OutputMedia import SoundSpeaker
 class ApplicationMain:
     ''' アプリケーションメインクラス
     '''
-    def __init__(self):
+    def __init__(self, app_root:str):
         '''コンストラクタ
+        Param:  アプリ実行フォルダ絶対パス
         '''
+        self.__set_app_root(app_root)   # アプリ実行フォルダ絶対パスをテキストファイルへ記憶
         self._root = tk.Tk()
         self._root.title("TkinterPhotoFrameCalendar")       # ウィンドウタイトル
         scr_w, scr_h = pag.size()
@@ -45,6 +49,15 @@ class ApplicationMain:
         '''
         self._stop_datetime_thread()    # 現在日時更新スレッド終了
         
+    def __set_app_root(self, app_root:str):
+        '''アプリ実行フォルダ絶対パスをテキストファイルへ記憶
+        '''
+        if os.path.isfile(APP_ROOT_FILE):
+            os.remove(APP_ROOT_FILE)    # テキストファイルが存在する場合、削除
+        else:
+            with open(APP_ROOT_FILE, 'x') as f:
+                f.write(app_root + "/")
+
     def _set_sounds(self):
         '''音設定
         '''

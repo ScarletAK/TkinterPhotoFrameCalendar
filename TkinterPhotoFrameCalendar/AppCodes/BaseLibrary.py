@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import pyautogui as pag
 import tkinter as tk
 import tkinter.ttk as ttk
 
 from dataclasses import dataclass
 
-from AppCodes.Configuration import *
+from AppCodes.Configuration import CalendarConfig
 
 
 ### 定数
