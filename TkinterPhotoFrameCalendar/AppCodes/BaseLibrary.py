@@ -1,17 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import tkinter as tk
-import tkinter.ttk as ttk
-
-from dataclasses import dataclass
-
-from AppCodes.Configuration import CalendarConfig
-
-
-### 定数
-BROWN = "#512007"
-BEIGE = "#f5f5dc"
-FONT = "Times"      # 文字フォント
+from AppCodes.ImportCommon import *
 
 
 class BaseFrame(tk.Frame):
@@ -26,6 +15,25 @@ class BaseFrame(tk.Frame):
         '''フォント設定
         '''
         return (FONT, font_size)
+        
+
+class BaseWindow(BaseFrame):
+    ''' 画面用基底フレーム設計クラス
+    '''
+    ### 定数
+    _MAIN_L = HEIGHT
+
+    def __init__(self, master=None):
+        '''コンストラクタ
+        '''
+        super().__init__(master=master)
+        self.grid(row=0, column=0, sticky="nsew")
+        self._is_window = True      # 画面が表示されているか
+        
+    def __del__(self):
+        '''デストラクタ
+        '''
+        self._is_window = False
         
 
 class BaseCanvas(tk.Canvas):
@@ -44,6 +52,19 @@ class BaseCanvas(tk.Canvas):
         return (FONT, font_size)
         
 
+class ShowDateCanvas(BaseCanvas):
+    ''' 日時表示キャンバス設計クラス
+    '''
+    def __init__(self, master, height:int, width:int):
+        super().__init__(master=master, height=height, width=width)
+
+    def _show_date_label(self, year:int, month:int, day:int):
+        return "{:04} / {:02} / {:02}".format(year, month, day)
+
+    def _show_time_label(self, hour:int, minute:int, second:int):
+        return "{:02} : {:02} : {:02}".format(hour, minute, second)
+
+
 @dataclass
 class ButtonConfig:
     text: str       # 表示テキスト
@@ -59,27 +80,3 @@ class BaseButton(tk.Button):
         super().__init__(master=master)
         self.configure(font=(FONT, config.text_size), height=config.height, width=config.width, relief=tk.RAISED,
                        text=config.text, foreground=BROWN, background=BEIGE)
-
-
-class DayButton(tk.Button):
-    ''' 日付ボタン設計クラス
-    '''
-    ### 定数
-    # 文字色（0:通常, 1:所定休日（主に土曜）, 2:法定休日（主に日曜、祝日））
-    _fg_color = [BROWN, "#0000cc", "#cc0000"]
-    # 背景色（0:通常, 1:現在年月日）
-    _bg_color = [BEIGE, "#00aa00"]
-
-    def __init__(self, master=None, text:str="", fg:int=0, bg:int=0):
-        super().__init__(master=master)
-        self.configure(font=(FONT, 14), height=2, width=4, relief=tk.RAISED, text=text,
-                       foreground=self._fg_color[fg], background=self._bg_color[bg])
-
-
-class MonthSelectBox(ttk.Combobox):
-    '''月選択ボックス設計
-    '''
-    def __init__(self, master=None):
-        super().__init__(master=master)
-        self.configure(textvariable=tk.StringVar(), font=(FONT, 24), height=40, width=10,
-                       values=CalendarConfig().get_month_texts(), foreground=BROWN, background=BEIGE)

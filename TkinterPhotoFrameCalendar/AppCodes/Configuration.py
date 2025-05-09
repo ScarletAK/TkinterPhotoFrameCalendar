@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import calendar as cal
-import csv
-import datetime as dt
-import json
-
+from AppCodes.ImportCommon import *
 from qreki import Kyureki
 
 

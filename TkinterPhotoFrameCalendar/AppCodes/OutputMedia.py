@@ -1,73 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from PIL import Image, ImageTk, ImageOps
-import os
-import pyaudio
-import shutil
-import threading
-import wave
-
 from AppCodes.BaseLibrary import BaseCanvas
 from AppCodes.Configuration import FileConfig
+from AppCodes.ImportCommon import *
+
+## 画像出力用ライブラリ
+from PIL import Image, ImageTk, ImageOps
+
+## 音声出力用ライブラリ
+import pyaudio
+import wave
 
 
-class SoundSpeaker:
-    ''' 音声出力クラス
-    '''
-    def __init__(self, sound_file):
-        '''コンストラクタ
-        '''
-        self.__sound = FileConfig().app_root_folder + "sounds/" + sound_file
-        self.__is_running = False
-        self.__speaker_thread = None
-
-    def __del__(self):
-        '''デストラクタ
-        '''
-        self.stop_thread()
-
-    def go_off(self):
-        '''アラーム停止後、直ちにスレッド再開
-        '''
-        self.stop_thread()
-        self.start_thread()
-
-    def start_thread(self):
-        '''スレッド開始
-        '''
-        self.__is_running = True
-        if self.__speaker_thread is None:
-            self.__speaker_thread = threading.Thread(target=self.__sound_speaker)
-            self.__speaker_thread.start()
-
-    def stop_thread(self):
-        '''スレッド停止
-        '''
-        self.__is_running = False
-        if self.__speaker_thread is not None:
-            self.__speaker_thread.join()
-            self.__speaker_thread = None
-
-    def __sound_speaker(self):
-        '''サウンド再生
-        '''
-        while self.__is_running:
-            wf = wave.open(self.__sound, 'r')
-            audio = pyaudio.PyAudio()
-            stream = audio.open(format=audio.get_format_from_width(wf.getsampwidth()),
-                                channels=wf.getnchannels(),
-                                rate=wf.getframerate(),
-                                output=True)
-            data = wf.readframes(1024)
-            while data != b'' and self.__is_running:
-                stream.write(data)
-                data = wf.readframes(1024)
-            stream.stop_stream()
-            stream.close()
-            audio.terminate()
-            wf.close()
-
-            
 class ImageView(BaseCanvas):
     ''' 画像表示クラス
     '''
@@ -150,3 +94,60 @@ class ImageSynchronize:
             self.flag = False
             self.folder = folder
             self.name = name
+            
+
+class SoundSpeaker:
+    ''' 音声出力クラス
+    '''
+    def __init__(self, sound_file):
+        '''コンストラクタ
+        '''
+        self.__sound = FileConfig().app_root_folder + "sounds/" + sound_file
+        self.__is_running = False
+        self.__speaker_thread = None
+
+    def __del__(self):
+        '''デストラクタ
+        '''
+        self.stop_thread()
+
+    def go_off(self):
+        '''アラーム停止後、直ちにスレッド再開
+        '''
+        self.stop_thread()
+        self.start_thread()
+
+    def start_thread(self):
+        '''スレッド開始
+        '''
+        self.__is_running = True
+        if self.__speaker_thread is None:
+            self.__speaker_thread = threading.Thread(target=self.__sound_speaker)
+            self.__speaker_thread.start()
+
+    def stop_thread(self):
+        '''スレッド停止
+        '''
+        self.__is_running = False
+        if self.__speaker_thread is not None:
+            self.__speaker_thread.join()
+            self.__speaker_thread = None
+
+    def __sound_speaker(self):
+        '''サウンド再生
+        '''
+        while self.__is_running:
+            wf = wave.open(self.__sound, 'r')
+            audio = pyaudio.PyAudio()
+            stream = audio.open(format=audio.get_format_from_width(wf.getsampwidth()),
+                                channels=wf.getnchannels(),
+                                rate=wf.getframerate(),
+                                output=True)
+            data = wf.readframes(1024)
+            while data != b'' and self.__is_running:
+                stream.write(data)
+                data = wf.readframes(1024)
+            stream.stop_stream()
+            stream.close()
+            audio.terminate()
+            wf.close()

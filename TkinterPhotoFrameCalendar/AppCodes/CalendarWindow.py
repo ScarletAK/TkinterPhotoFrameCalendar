@@ -1,15 +1,81 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import math
-import os
-import re
-import random
-import shutil
-
-from AppCodes.BaseLibrary import *
-from AppCodes.Configuration import CalendarConfig, EventNameConfig, JapanDaysConfig, Kyureki, dt
+from AppCodes.BaseLibrary import BaseWindow, BaseFrame, BaseButton, ButtonConfig, ShowDateCanvas
+from AppCodes.Configuration import CalendarConfig, EventFolderConfig
+from AppCodes.ImportCommon import *
 from AppCodes.OutputMedia import ImageView, ImageSynchronize
 
+
+class Window1(BaseWindow):
+    ''' カレンダー／デジタル時計／スライドショー画面設計クラス
+    '''
+    def __init__(self, master, init_date:dt.datetime):
+        '''コンストラクタ
+        Param: 画面生成日時
+        '''
+        super().__init__(master=master)
+        self.__current_date = init_date
+        self.__folder_config = EventFolderConfig()
+        # カレンダーとディジタル時計表示部分
+        self._create_datetime_frame(init_date)
+        # スライドショー表示部分
+        self._create_slideshow_frame(init_date.date())
+        # メイン画面生成時の日時を設定
+        self.current_datetime_callback(now=init_date)
+        
+    def __del__(self):
+        '''デストラクタ
+        '''
+        super().__del__()
+        
+    def _create_datetime_frame(self, init_date:dt.datetime):
+        '''カレンダーとディジタル時計表示フレーム生成
+        '''
+        datetime_frame = BaseFrame(master=self)
+        datetime_frame.pack(side=tk.LEFT)
+        # カレンダー表示部分生成
+        self._cal = Calendar(master=datetime_frame, init_date=init_date.date())     # カレンダーオブジェクト生成
+        self._cal.pack()
+        self.update()
+        # ディジタル時計表示部分生成
+        d_clock_height =self._MAIN_L - self._cal.winfo_height()
+        d_clock_width = self._cal.winfo_width()
+        self._d_clock = DigitalClock(master=datetime_frame, height=d_clock_height, width=d_clock_width)
+        self._d_clock.pack(fill = tk.BOTH)
+        self.update()
+
+    def _create_slideshow_frame(self, init_date:dt.date):
+        '''スライドショー表示フレーム生成
+        '''
+        slideshow_frame = BaseFrame(master=self)
+        slideshow_frame.pack(side=tk.LEFT)
+        self._slideshow_view = SlideShow(master=slideshow_frame, length=self._MAIN_L, interval=self.__folder_config.interval)
+        self._slideshow_view.pack(fill = tk.BOTH)
+        self.update()
+        # スライドショー画像フォルダ初期値設定
+        self._slideshow_view.change_src_folder(self.__folder_config.get_event_folder(init_date.month, init_date.day))
+        
+    def current_datetime_callback(self, now:dt.datetime):
+        '''現在日時を更新
+        '''
+        if (self._is_window == True):
+            self._d_clock.clock_update(now)                     # ディジタル時計更新
+            self._slideshow_view.change_show_image(now.second)  # スライドショー画像更新
+            if (self.__current_date != now.date()):
+                # 日付が進んだ場合
+                self._cal.current_date_callback(now.date())     # カレンダー更新
+                self._slideshow_view.change_src_folder(self.__folder_config.get_event_folder(now.month, now.day))   # スライドショー画像フォルダ変更
+                self.__current_date = now.date()
+            
+    def send_date_select_flag(self) -> bool:
+        return self._cal.date_selected
+
+    def date_select_flag_down(self):
+        self._cal.date_selected = False
+
+    def send_selected_date(self) -> dt.date:
+        return self._cal.select_date_send()
+    
 
 class Calendar(BaseFrame):
     ''' カレンダー設計クラス
@@ -220,18 +286,29 @@ class Calendar(BaseFrame):
         self.__show_select_calendar(self.__select_date[0], self.__select_date[1])
         
 
-class ShowDateCanvas(BaseCanvas):
-    ''' 日時表示キャンバス設計クラス
+class DayButton(tk.Button):
+    ''' 日付ボタン設計クラス
     '''
-    def __init__(self, master, height:int, width:int):
-        super().__init__(master=master, height=height, width=width)
+    ### 定数
+    # 文字色（0:通常, 1:所定休日（主に土曜）, 2:法定休日（主に日曜、祝日））
+    _fg_color = [BROWN, "#0000cc", "#cc0000"]
+    # 背景色（0:通常, 1:現在年月日）
+    _bg_color = [BEIGE, "#00aa00"]
 
-    def _show_date_label(self, year:int, month:int, day:int):
-        return "{:04} / {:02} / {:02}".format(year, month, day)
+    def __init__(self, master=None, text:str="", fg:int=0, bg:int=0):
+        super().__init__(master=master)
+        self.configure(font=(FONT, 14), height=2, width=4, relief=tk.RAISED, text=text,
+                       foreground=self._fg_color[fg], background=self._bg_color[bg])
 
-    def _show_time_label(self, hour:int, minute:int, second:int):
-        return "{:02} : {:02} : {:02}".format(hour, minute, second)
 
+class MonthSelectBox(ttk.Combobox):
+    '''月選択ボックス設計
+    '''
+    def __init__(self, master=None):
+        super().__init__(master=master)
+        self.configure(textvariable=tk.StringVar(), font=(FONT, 24), height=40, width=10,
+                       values=CalendarConfig().get_month_texts(), foreground=BROWN, background=BEIGE)
+        
 
 class DigitalClock(ShowDateCanvas):
     ''' デジタル時計設計クラス
@@ -249,95 +326,6 @@ class DigitalClock(ShowDateCanvas):
         '''
         datetime_show = self._show_date_label(now.year, now.month, now.day) + " " + self._show_time_label(now.hour, now.minute, now.second)
         self.itemconfig(digital, text=datetime_show)
-        
-
-class DayDetailInfo(ShowDateCanvas):
-    ''' 日付詳細説明設計クラス
-    '''
-    def __init__(self, master, height:int, width:int):
-        super().__init__(master=master, height=height, width=width)
-        global detail
-        detail = self.create_text(20, 20, text="", anchor=tk.NW, font=self._set_font(18), fill=self._fg_color)
-        self._jp_days_conf = JapanDaysConfig()
-        self.__event_config = EventNameConfig()
-
-    def update_show_date(self, show_date:dt.date):
-        '''詳細表示年月日を更新
-        '''
-        show_date_label = self._show_date_label(show_date.year, show_date.month, show_date.day)
-        holiday = ""
-        holiday_list = self._jp_days_conf.get_japan_holiday_list(show_date.year, show_date.month)
-        if (show_date.day in holiday_list.keys()):
-            holiday = holiday_list[show_date.day]
-        kanshi = "年干支：" + self._jp_days_conf.get_zodiac(show_date.year)
-        getsumei = "月和暦：" + self._jp_days_conf.get_tsukiwamei(show_date.month)
-        wareki = "　和暦：" + self._jp_days_conf.convert_to_wareki(show_date) + str(show_date.month) + "月" + str(show_date.day) + "日"
-        lunar_date = Kyureki.from_ymd(show_date.year, show_date.month, show_date.day)
-        kyureki = "　旧暦：" + str(lunar_date)
-        rokuyo = "　六曜：" + lunar_date.rokuyou
-        term = "　　　　" + self._jp_days_conf.check_solar_terms_in_date(show_date)
-        day_text = show_date_label + "\n" + holiday + "\n" + kanshi + "\n" + getsumei + "\n" + wareki + "\n" + kyureki + "\n" + rokuyo + "\n" + term
-        day_events = self.__event_config.get_event_name(show_date.month, show_date.day)
-        if (len(day_events) > 0):
-            for event_name in day_events:
-                day_text = day_text + "\n" + event_name
-        self.itemconfig(detail, text=day_text)
-        
-
-class AnalogClock(ImageView):
-    ''' アナログ時計設計クラス
-    '''
-
-    ### 定数
-    __OVAL_RAD = 200
-    __OVAL_RAD_H = 210  # 短針端点の半径
-    __OVAL_RAD_M = 220  # 長針端点の半径
-    __OVAL_RAD_S = 230  # 秒針端点の半径
-    __EDGE_H = 100      # 短針の端点
-    __EDGE_M = 70       # 長針の端点
-    __EDGE_S = 40       # 秒針の端点
-    __W_TAG = "needle"  # ウィジェットタグ
-    
-    def __init__(self, master, height:int, width:int):
-        '''コンストラクタ
-        Param: マスター、表示用キャンバス高さ、幅
-        '''
-        super().__init__(master, height, width)
-        self.__C = [int(width/2), int(height/2)]    # アナログ時計中心
-        # 文字盤を表示（from : https://illustimage.com/?id=11732）
-        self._set_folder_path("AnalogClock")
-        self._set_image_plot_to_all_canvas("clock_oval.jpg")
-        self.create_image(self.__C[0], self.__C[1], image=self._show_image)
-        self.__create_clock_oval(self.__OVAL_RAD_S)
-        self.__create_clock_oval(self.__OVAL_RAD_M)
-        self.__create_clock_oval(self.__OVAL_RAD_H)
-        self.__create_clock_oval(self.__OVAL_RAD)
-        
-    def __create_clock_oval(self, rad:int):
-        '''アナログ時計の文字盤の外周を描画
-        '''
-        self.create_oval((self.__C[0]-rad), (self.__C[1]-rad), (self.__C[0]+rad), (self.__C[1]+rad), width=1.5, fill=None)
-
-    def clock_update(self, now:dt.time):
-        '''アナログ時計の針を描画
-        '''
-        # 針を初期化
-        self.delete(self.__W_TAG)
-        # 各針の角度算出
-        angle_h = math.radians(float(90 - 30 * now.hour - (now.minute / 2)))    # 時
-        angle_m = math.radians(float(90 - 6 * now.minute))                      # 分
-        angle_s = math.radians(float(90 - 6 * now.second))                      # 秒
-        # 針の終端位置
-        pos_hx = [self.__C[0]+round(math.cos(angle_h)*self.__EDGE_H), self.__C[0]+round(math.cos(angle_h)*self.__OVAL_RAD_H)] # 時のX座標
-        pos_hy = [self.__C[1]-round(math.sin(angle_h)*self.__EDGE_H), self.__C[1]-round(math.sin(angle_h)*self.__OVAL_RAD_H)] # 時のY座標
-        pos_mx = [self.__C[0]+round(math.cos(angle_m)*self.__EDGE_M), self.__C[0]+round(math.cos(angle_m)*self.__OVAL_RAD_M)] # 分のX座標
-        pos_my = [self.__C[1]-round(math.sin(angle_m)*self.__EDGE_M), self.__C[1]-round(math.sin(angle_m)*self.__OVAL_RAD_M)] # 分のY座標
-        pos_sx = [self.__C[0]+round(math.cos(angle_s)*self.__EDGE_S), self.__C[0]+round(math.cos(angle_s)*self.__OVAL_RAD_S)] # 秒のX座標
-        pos_sy = [self.__C[1]-round(math.sin(angle_s)*self.__EDGE_S), self.__C[1]-round(math.sin(angle_s)*self.__OVAL_RAD_S)] # 秒のY座標
-        # 針を描画（外側から針を向けるイメージ）
-        self.create_line(pos_hx[0], pos_hy[0], pos_hx[1], pos_hy[1], width=10, tags=self.__W_TAG)
-        self.create_line(pos_mx[0], pos_my[0], pos_mx[1], pos_my[1], width=5, tags=self.__W_TAG)
-        self.create_line(pos_sx[0], pos_sy[0], pos_sx[1], pos_sy[1], width=2, tags=self.__W_TAG)
         
 
 class SlideShow(ImageView):

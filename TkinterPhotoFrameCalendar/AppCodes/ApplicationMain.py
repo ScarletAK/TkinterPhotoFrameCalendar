@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os
-import schedule as sd
-import threading
-import time
-import pyautogui as pag
-
-from AppCodes.BaseLibrary import *
-from AppCodes.Configuration import APP_ROOT_FILE, SoundConfig, dt
-from AppCodes.Window import Window1, Window2
+from AppCodes.Configuration import APP_ROOT_FILE, SoundConfig
+from AppCodes.ImportCommon import *
 from AppCodes.OutputMedia import SoundSpeaker
+
+## 各画面オブジェクト設計モジュール
+from AppCodes.CalendarWindow import Window1
+from AppCodes.DayDetailWindow import Window2
+
+## 音声スケジューリング用ライブラリ
+import schedule as sd
+
+## 画面表示サイズ設定用ライブラリ
+import pyautogui as pag
 
 
 class ApplicationMain:

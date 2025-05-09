@@ -7,6 +7,6 @@ Month,Day,Name,ImageFolder
 10,30,ハロウィン,
 12,24,クリスマスイブ,
 12,25,クリスマス,
-3,17,テストイベント1,Test_Event_1
-3,17,テストイベント2,Test_Event_2
-8,21,テストイベント3,Test_Event_3
+5,17,テストイベント1,Test_Event_1
+5,17,テストイベント2,Test_Event_2
+7,5,テストイベント3,Test_Event_3
