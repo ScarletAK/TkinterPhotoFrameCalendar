@@ -391,19 +391,8 @@ class SlideShow(ImageView):
             for image in images:
                 if re.search('.+\.(jpg|JPG)', image) == None:
                     # 画像の形式がJPEGでない場合、JPEG変換
-                    self.__change_to_jpeg(image)
+                    self._change_to_jpeg(image)
                 self._show_list.append(image)
         # リスト内の画像をシャッフル
         random.shuffle(self._show_list)
     
-    def __change_to_jpeg(self, src_image:str):
-        '''画像をJPEG形式へ変換
-        '''
-        src_path = self._inside_folder + "/" + src_image
-        img_name = os.path.splitext(os.path.basename(src_image))
-        dst_path = self._inside_folder + "/" + img_name + '.jpg'
-        img = Image.open(src_path)
-        img = img.convert('RGB')
-        img.save(dst_path, "JPEG", quality=95)
-        os.remove(src_path)
-        

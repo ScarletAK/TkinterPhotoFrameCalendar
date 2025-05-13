@@ -38,8 +38,18 @@ class ImageView(BaseCanvas):
         # 画像の縦横比を崩さずにcanvasのサイズ全体に画像をリサイズ（余白を追加）
         open_img = ImageOps.pad(open_img, (self._width, self._height), color=self._bg_color)
         self._show_image = ImageTk.PhotoImage(open_img, master=self)
-
-
+        
+    def _change_to_jpeg(self, src_image:str):
+        '''画像をJPEG形式へ変換
+        '''
+        src_path = self._inside_folder + "/" + src_image
+        img_name = os.path.splitext(os.path.basename(src_image))
+        dst_path = self._inside_folder + "/" + img_name + '.jpg'
+        img = Image.open(src_path)
+        img = img.convert('RGB')
+        img.save(dst_path, "JPEG", quality=95)
+        os.remove(src_path)
+        
 class ImageSynchronize:
     ''' フォルダ間画像同期クラス
     '''
